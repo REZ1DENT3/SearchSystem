@@ -41,6 +41,13 @@ class Page extends \PHPixie\Controller
             $words = $this->get_words($words);
             if (!count($words))
                 return [];
+
+            $r = array_count_values($words);
+            arsort($r);
+
+            var_dump( $r );
+            die;
+
             $words = $this->pixie->db->expr('(' . implode(',', $words) . ')');
             $words = $this->pixie->orm->get(Models::Word)
                 ->where('value', 'in', $words)
