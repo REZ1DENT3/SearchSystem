@@ -1,0 +1,9 @@
+{
+  "require": {
+    "phpixie/core": "2.*@dev",
+    "phpixie/db": "2.*@dev",
+    "phpixie/orm": "2.*@dev",
+    "phpixie/haml": "2.*@dev",
+    "mthaml/mthaml": "dev-master"
+  }
+}
