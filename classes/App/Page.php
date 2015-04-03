@@ -40,10 +40,11 @@ class Page extends \PHPixie\Controller
         if (is_string($words)) {
             $words = $this->get_words($words);
             if (!count($words))
-                return false;
+                return [];
             $words = $this->pixie->db->expr('(' . implode(',', $words) . ')');
             $words = $this->pixie->orm->get(Models::Word)
                 ->where('value', 'in', $words)
+                ->where('weight', '>', 0)
                 ->find_all()
                 ->as_array(true);
             foreach($words as $word) {
@@ -54,7 +55,7 @@ class Page extends \PHPixie\Controller
             $words_id = $words;
         }
         if (!count($words_id))
-            return false;
+            return [];
         $words_id = $this->pixie->db->expr("(" . implode(',', $words_id) . ")");
         return $this->pixie->orm->get(Models::Indice)
             ->where('word_id', 'in', $words_id)
