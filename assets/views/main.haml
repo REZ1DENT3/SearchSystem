@@ -5,8 +5,8 @@
     %meta(charset="utf-8")
     %meta(http-equiv="X-UA-Compatible" content="IE=edge")
     %meta(name="viewport" content="width-device-width, initial-scale=1")
-    %link(rel="stylesheet" href="/web/css/bootstrap.min.css")
-    %link(rel="stylesheet" href="/web/css/style.css")
+    %link(rel="stylesheet" href="/#{$web}css/bootstrap.min.css")
+    %link(rel="stylesheet" href="/#{$web}css/style.css")
   %body
     .container
       .col-lg-8
@@ -48,6 +48,6 @@
             ="Время выполнения запроса: " . round($time, 12)
         .alert.alert-warning Автор: Бабичев Максим (REZ1DENT3)
 
-    %script(type="text/javascript" src="/web/js/jquery-1.11.2.min.js")
-    %script(type="text/javascript" src="/web/js/bootstrap.min.js")
-    %script(type="text/javascript" src="/web/js/select.js")
+    %script(type="text/javascript" src="/#{$web}js/jquery-1.11.2.min.js")
+    %script(type="text/javascript" src="/#{$web}js/bootstrap.min.js")
+    %script(type="text/javascript" src="/#{$web}js/select.js")

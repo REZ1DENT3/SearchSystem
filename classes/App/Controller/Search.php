@@ -59,8 +59,8 @@ class Search extends \App\Page
     {
         $t1 = xdebug_time_index();
         include_once $this->pixie->root_dir . 'classes/App/simple_html_dom.php';
-//        $range = [254277, 253973, 244069, 219475, 216107, 205710, 197970, 194470, 189360, 188666, 186816, 186194, 178899, 178833];
-        $range = range(250000, 253000);
+        $range = [254277, 253973, 244069, 219475, 216107, 205710, 197970, 194470, 189360, 188666, 186816, 186194, 178899, 178833];
+        $range = array_merge($range, range(1, 254949));
         foreach($range as $r) {
             $url = "http://habrahabr.ru/post/$r/";
             $page = $this->pixie->orm->get(Models::Page)
