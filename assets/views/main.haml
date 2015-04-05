@@ -1,3 +1,9 @@
 %ul
   -foreach($rows as $row)
-    %li =$row['value']
+    %li
+      %a(href = "#{$row['url']}" target="__blink" )
+        =$row['title']
+
+%p
+  время выполнения,
+  =$time

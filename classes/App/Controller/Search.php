@@ -9,28 +9,60 @@ class Search extends \App\Page
 	
 	public function action_index()
 	{
-        $q = 'Привет, Хабр!';
+        $t1 = xdebug_time_index();
+        $q = 'базы данные';
         if ($this->request->get('q') != null) {
             $q = $this->request->get('q');
         }
-        $rows = $this->get_indices($q);
-        foreach($rows as $k => $row) {
-            $table = $this->pixie->orm->get(Models::Table, $row->table_id);
-            if ($table->loaded()) {
-                $row->table_name = $table->value;
-                $table = $this->pixie->orm->get($row->table_name, $row->table_index);
-                if ($table->loaded()) {
-                    $rows[$k] = $table->as_array(true);
-                }
-                else {
-                    unset($rows[$k]);
-                }
-            }
-            else {
-                unset($rows[$k]);
-            }
-        }
-        $this->view->rows = $rows;
+        $se = new \App\SearchEngine($this->pixie);
+        $this->view->rows = $se->get_rows($q);
+        $t2 = xdebug_time_index();
+        $this->view->time = $t2 - $t1;
 	}
-	
+
+    public function action_indices()
+    {
+        $t1 = xdebug_time_index();
+        $se = new \App\SearchEngine($this->pixie);
+        $se->indices(Models::Page, ['content', 'title']);
+        $t2 = xdebug_time_index();
+        $this->view->time = $t2 - $t1;
+        $this->view->rows = [];
+    }
+
+    function get_http_response_code($url) {
+        $headers = get_headers($url);
+        return substr($headers[0], 9, 3);
+    }
+
+    public function action_habra_parser()
+    {
+        die;
+        $t1 = xdebug_time_index();
+        include_once $this->pixie->root_dir . 'classes/App/simple_html_dom.php';
+        $range = [254277, 253973, 244069, 219475, 216107, 205710, 197970, 194470, 189360, 188666, 186816, 186194, 178899, 178833];
+//        $range = range(254800, 254890);
+        foreach($range as $r) {
+            $url = "http://habrahabr.ru/post/$r/";
+            if($this->get_http_response_code($url) != "200"){
+                continue;
+            }
+            $content = file_get_html($url);
+            $title = $content->find('h1.title span.post_title', 0);
+            if (!$title) continue;
+            $title = $title->plaintext;
+            $content = $content->find('div.content', 0);
+            if (!$content) continue;
+            $page = $this->pixie->orm->get(Models::Page);
+            $page->content = $content->plaintext;
+            $page->title = $title;
+            $page->datetime = date('Y-m-d H:i:s', time());
+            $page->url = $url;
+            $page->save();
+        }
+        $t2 = xdebug_time_index();
+        $this->view->time = $t2 - $t1;
+        $this->view->rows = [];
+    }
+
 }
