@@ -14,10 +14,22 @@ class Search extends \App\Page
         if ($this->request->get('q') != null) {
             $q = $this->request->get('q');
         }
+        $table = [];
+        if ($this->request->get('table') != null) {
+            $table = $this->request->get('table');
+            if (strlen($table)) {
+                $table = explode(',', $table);
+            }
+            else {
+                $table = [];
+            }
+        }
+        $this->view->select = count($table) ? current($table) : 'All';
         $se = new \App\SearchEngine($this->pixie);
-        $this->view->rows = $se->get_rows($q);
+        $this->view->rows = $se->get_rows($q, $table);
         $t2 = xdebug_time_index();
         $this->view->time = $t2 - $t1;
+        $this->view->q = $q;
 	}
 
     public function action_indices()
@@ -26,8 +38,16 @@ class Search extends \App\Page
         $se = new \App\SearchEngine($this->pixie);
         $se->indices(Models::Page, ['content', 'title']);
         $t2 = xdebug_time_index();
-        $this->view->time = $t2 - $t1;
-        $this->view->rows = [];
+        die;
+    }
+
+    public function action_indices_tests()
+    {
+        $t1 = xdebug_time_index();
+        $se = new \App\SearchEngine($this->pixie);
+        $se->indices(Models::Test, ['value']);
+        $t2 = xdebug_time_index();
+        die;
     }
 
     function get_http_response_code($url) {
@@ -64,8 +84,7 @@ class Search extends \App\Page
             $page->save();
         }
         $t2 = xdebug_time_index();
-        $this->view->time = $t2 - $t1;
-        $this->view->rows = [];
+        die;
     }
 
 }

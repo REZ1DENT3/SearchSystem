@@ -1,8 +1,6 @@
 <?php
 
 namespace App;
-use App\Model\Word;
-use PHPixie\ORM\Model;
 
 /**
  * Base controller

@@ -54,16 +54,17 @@ class SearchEngine
      * @param string $string
      * @return array
      */
-    public function get_rows($string)
+    public function get_rows($string, $tables = [])
     {
         $rows = [];
-        foreach($this->get_indices($string) as $k => $row) {
+        foreach($this->get_indices($string, $tables) as $k => $row) {
             $table = $this->pixie->orm->get(Models::Table, $row->table_id);
             if ($table->loaded()) {
                 $row->table_name = $table->value;
                 $table = $this->pixie->orm->get($row->table_name, $row->table_index);
                 if ($table->loaded()) {
                     $rows[$k] = $table->as_array(true);
+                    $rows[$k]['__table'] = $row->table_name;
                 }
             }
         }
@@ -78,7 +79,7 @@ class SearchEngine
     public function get_words($string)
     {
         $string = strip_tags($string);
-        $string = preg_replace('/[^а-я\w-\s]/iu', '', $string);
+        $string = preg_replace('/[^а-я\w-\s]/iu', ' ', $string);
         $string = preg_replace('/\s-\s/', ' ', $string);
         $string = preg_replace('/ё/iu', 'е', $string);
         $string = preg_replace('/\s+/', " ", $string);
@@ -167,7 +168,7 @@ class SearchEngine
      * @param string $words
      * @return array
      */
-    public function get_indices($string)
+    public function get_indices($string, $tables = [])
     {
         $words = $this->get_words($string);
         $words_id = $this->get_word_ids($words);
@@ -176,9 +177,32 @@ class SearchEngine
             return [];
         }
 
+        if (count($tables)) {
+            foreach($tables as $k => &$table) {
+                $table = $this->pixie->orm->get(Models::Table)
+                    ->where('value', $table)
+                    ->find();
+                if ($table->loaded()) {
+                    $table = "'{$table->id}'";
+                }
+                else {
+                    unset($tables[$k]);
+                }
+            }
+            if (count($tables)) {
+                $tables = "AND `table_id` IN (" . implode(', ', $tables) . ')';
+            }
+            else {
+                $tables = "";
+            }
+        }
+        else {
+            $tables = "";
+        }
+
         $sql = "SELECT `table_id`, `table_index`
                 FROM `indices`
-                WHERE `word_id` in (" . implode(',', $words_id) . ")
+                WHERE `word_id` IN (" . implode(',', $words_id) . ") $tables
                 GROUP BY `table_index`, `table_id`
                 ORDER BY `weight`, COUNT(`rating_reps`) ASC";
 

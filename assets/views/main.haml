@@ -1,12 +1,53 @@
-%ul
-  -foreach($rows as $row)
-    %li
-      %a(href = "#{$row['url']}" target="__blink" )
-        =$row['title']
+!!!
+%html
+  %head
+    %title Поисковая система
+    %meta(charset="utf-8")
+    %meta(http-equiv="X-UA-Compatible" content="IE=edge")
+    %meta(name="viewport" content="width-device-width, initial-scale=1")
+    %link(rel="stylesheet" href="/web/css/bootstrap.min.css")
+    %link(rel="stylesheet" href="/web/css/style.css")
+  %body
+    .container
+      .col-lg-8
+        .row
+          %form(method="get" action="/")
+            #from_search.input-group
+              .input-group-btn
+                %button.btn.btn-default.dropdown-toggle(data-toggle="dropdown" aria-expanded="false" type="button")
+                  =$select
+                  %span.caret
+                %ul.dropdown-menu.dropdown-menu-right(role="menu")
+                  %li
+                    %a(href="#") All
+                  %li
+                    %a(href="#") Page
+                  %li
+                    %a(href="#") Test
+              %input.form-control(type="text" name="q" placeholder="Поиск.." value="#{$q}")
+              %span.input-group-btn
+                %button.btn.btn-primary Найти
+            %input.hidden(name="table" value="#{$select}")
+          %p
+          %ol.list-group
+            -foreach($rows as $key => $row)
+              %li.list-group-item
+                %span.badge
+                  =$row['__table']
+                - if ($row['__table'] == 'page')
+                  %a(href = "#{$row['url']}" target="__blink" )
+                    =$row['title']
+                - elseif ($row['__table'] == 'test')
+                  =$row['value']
 
-%p
-  время выполнения,
-  =$time
-  %br
-  выбрано объектов:
-  =count($rows)
+      .col-lg-4
+        -if (count($rows))
+          .alert.alert-info
+            ="Выбрано объектов: " . count($rows)
+          .alert.alert-success
+            ="Время выполнения запроса: " . round($time, 12)
+        .alert.alert-warning Автор: Бабичев Максим (REZ1DENT3)
+
+    %script(type="text/javascript" src="/web/js/jquery-1.11.2.min.js")
+    %script(type="text/javascript" src="/web/js/bootstrap.min.js")
+    %script(type="text/javascript" src="/web/js/select.js")
