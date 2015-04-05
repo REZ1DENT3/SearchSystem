@@ -20,6 +20,7 @@ class SearchEngine
      */
     public function __construct($pixie)
     {
+        set_time_limit(0);
         $this->pixie = $pixie;
         $this->morphy = new phpMorphy\phpMorphy();
     }
@@ -84,6 +85,10 @@ class SearchEngine
         $string = mb_strtoupper($string);
         $array = explode(' ', $string);
         foreach($array as $key => $word) {
+            if (empty($word)) {
+                unset($array[$key]);
+                continue;
+            }
             $word = $this->morphy->ru->getBaseForm($word);
             if ($word) {
                 $array[$key] = current($word);
