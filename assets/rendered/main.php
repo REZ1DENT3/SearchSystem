@@ -10,4 +10,7 @@
 <p>
   время выполнения,
   <?php echo htmlspecialchars($time,ENT_QUOTES,'UTF-8'); ?>
+  <br>
+  выбрано объектов:
+  <?php echo htmlspecialchars(count($rows),ENT_QUOTES,'UTF-8'); ?>
 </p>
