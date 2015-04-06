@@ -204,7 +204,7 @@ class SearchEngine
                 FROM `indices`
                 WHERE `word_id` IN (" . implode(',', $words_id) . ") $tables
                 GROUP BY `table_index`, `table_id`
-                ORDER BY `weight`, COUNT(`rating_reps`) ASC";
+                ORDER BY SUM(`weight`) * COUNT(`rating_reps`) DESC";
 
         $db = $this->pixie->db->get();
         return $db->execute($sql)->as_array();
