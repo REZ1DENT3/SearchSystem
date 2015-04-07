@@ -14,7 +14,7 @@ class phpMorphy
 
     /**
      * @param $key
-     * @return \PhpMorphy
+     * @return Morphy
      */
     public function get($key)
     {
@@ -23,7 +23,7 @@ class phpMorphy
 
     /**
      * @param $key
-     * @return \PhpMorphy|null
+     * @return Morphy|null
      */
     public function __get($key)
     {
@@ -58,7 +58,7 @@ class phpMorphy
             )
         );
         $dir = __DIR__ . '/dicts/' . $lang;
-        return new \phpMorphy($dir, $lang, $opts);
+        return new Morphy($dir, $lang, $opts);
     }
 
 }

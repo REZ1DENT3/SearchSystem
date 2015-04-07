@@ -86,23 +86,25 @@ class SearchEngine
     public function get_words($string)
     {
 
+        // FIXME: Дополнительный пробел перед тегом, для <p>hello</p>world
+        $string = preg_replace('/([<].*?[>])/', ' $1 ', $string);
+
         $string = strip_tags($string);
         $string = preg_replace('/[^а-я\w-\s]/iu', ' ', $string);
-        $string = preg_replace('/\s-\s/', ' ', $string);
-        $string = preg_replace('/ё/iu', 'е', $string);
-        $string = preg_replace('/\s+/', " ", $string);
+        $string = preg_replace('/[\s\t\n\r]-[\s\t\n\r]/', ' ', $string);
+        $string = preg_replace('/ё/iu', 'Е', $string);
+        $string = preg_replace('/[\s\t\n\r]+/', ' ', $string);
         $string = mb_strtoupper($string);
+
+        if (empty($string)) {
+            return [];
+        }
+
         $array = explode(' ', $string);
 
         foreach($array as $key => $word) {
 
-            if (empty($word)) {
-                unset($array[$key]);
-                continue;
-            }
-
-            $word = $this->morphy->ru->getBaseForm($word);
-
+            $word = $this->morphy->get('ru')->getBaseForm($word);
             if ($word) {
                 $array[$key] = current($word);
             }
@@ -142,47 +144,53 @@ class SearchEngine
     public function indices($model = \App\Models::Page, $columns = ['content'])
     {
 
-        $m = $this->pixie->orm->get($model)
+        $_model = $this->pixie->orm->get($model)
             ->find_all()
             ->as_array();
 
-        $t = $this->pixie->orm->get(Models::Table)
+        $_table = $this->pixie->orm->get(Models::Table)
             ->where('value', $model)
             ->find();
 
-        if (!$t->loaded())
+        if (!$_table->loaded())
             return false;
 
-        $t = $t->id;
+        $_table = $_table->id;
 
-        foreach($m as $p) {
+        foreach($_model as $_index) {
 
             foreach($columns as $column) {
 
-                $content = $p->{$column};
+                $content = $_index->{$column};
                 $words = $this->get_words($content);
                 $words = $this->get_rating_reps($words);
 
                 foreach($words as $word => $reps) {
 
-                    if ($id = $this->add_word($word)) {
+                    if ($word_id = $this->add_word($word)) {
+
                         $indice = $this->pixie->orm->get(Models::Indice)
-                            ->where('word_id', $id)
-                            ->where('table_id', $t)
-                            ->where('table_index', $p->id)
+                            ->where('word_id', $word_id)
+                            ->where('table_id', $_table)
+                            ->where('table_index', $_index->id)
                             ->find();
+
                         if ($indice->loaded())
                             continue;
-                        $indice->word_id = $id;
-                        $indice->table_id = $t;
-                        $indice->table_index = $p->id;
+
+                        $indice->word_id = $word_id;
+                        $indice->table_id = $_table;
+                        $indice->table_index = $_index->id;
                         $indice->rating_reps = $reps;
                         $indice->weight = $this->weight($word);
                         $indice->save();
+
                     }
                 }
             }
         }
+
+        return true;
     }
 
     /**
@@ -198,11 +206,15 @@ class SearchEngine
             return [];
         }
 
+        $sql_tables = "";
         if (count($tables)) {
+
             foreach($tables as $k => &$table) {
+
                 $table = $this->pixie->orm->get(Models::Table)
                     ->where('value', $table)
                     ->find();
+
                 if ($table->loaded()) {
                     $table = "'{$table->id}'";
                 }
@@ -210,79 +222,63 @@ class SearchEngine
                     unset($tables[$k]);
                 }
             }
+
             if (count($tables)) {
-                $tables = "AND `table_id` IN (" . implode(', ', $tables) . ')';
+                $sql_tables = "AND `table_id` IN (" . implode(', ', $tables) . ')';
             }
-            else {
-                $tables = "";
-            }
-        }
-        else {
-            $tables = "";
         }
 
         $sql = "SELECT `table_id`, `table_index`
                 FROM `indices`
-                WHERE `word_id` IN (" . implode(',', $words_id) . ") $tables
+                WHERE `word_id` IN (" . implode(',', $words_id) . ") $sql_tables
                 GROUP BY `table_index`, `table_id`
                 ORDER BY `weight`, SUM(`rating_reps`) DESC";
 
         $db = $this->pixie->db->get();
         return $db->execute($sql)->as_array();
+
     }
 
     public function weight($word)
     {
 
-//        C=существительное
-//        П=прилагательное
-//        МС=местоимение-существительное
-//        Г=глагол в личной форме
-//        ПРИЧАСТИЕ=причастие
-//        ДЕЕПРИЧАСТИЕ=деепричастие
-//        ИНФИНИТИВ=инфинитив
-//        МС-ПРЕДК=местоимение-предикатив
-//        МС-П=местоименное прилагательное
-//        ЧИСЛ=числительное (количественное)
-//        ЧИСЛ-П=порядковое числительное
-//        Н=наречие
-//        ПРЕДК=предикатив
-//        ПРЕДЛ=предлог
-//        СОЮЗ=союз
-//        МЕЖД=междометие
-//        ЧАСТ=частица
-//        ВВОДН=вводное слово
-
         $profile = [
-            'ПРЕДЛ' => 0, 'СОЮЗ'  => 0,
-            'МЕЖД'  => 0, 'ВВОДН' => 0,
-            'ЧАСТ'  => 0, 'МС'    => 0,
 
             'С'     => 3, 'Г'     => 3,
-            'П'     => 2, 'Н'     => 2
+            'П'     => 2, 'Н'     => 2,
+
+            'ПРЕДЛ' => 0, 'СОЮЗ'  => 0,
+            'МЕЖД'  => 0, 'ВВОДН' => 0,
+            'ЧАСТ'  => 0, 'МС'    => 0
+
         ];
 
-        $parts_of_speech = $this->morphy->ru->getPartOfSpeech($word);
+        $parts_of_speech = $this->morphy->get('ru')->getPartOfSpeech($word);
 
         if (!$parts_of_speech)
             return 1;
 
         $range = [];
+        $index = 0;
         foreach($parts_of_speech as $word => $speech) {
+
+            $range[$index] = 1;
             if (is_array($speech)) {
-                foreach ($speech as $ind => $val) {
-                    if (isset($profile[$val])) {
-                        $range[] = $profile[$val];
-                    } else {
-                        $range[] = 1;
+                if (count($speech)) {
+
+                    $temp_speech = [current($speech)];
+                    while (next($speech)) {
+
+                        $key = current($speech);
+                        if (isset($profile[$key]))
+                            $temp_speech[] = $profile[$key];
                     }
+                    $range[$index] = max($temp_speech);
                 }
             }
             else {
                 if (isset($profile[$speech])) {
-                    $range[] = $profile[$speech];
-                } else {
-                    $range[] = 1;
+                    $range[$index] = $profile[$speech];
                 }
             }
         }
