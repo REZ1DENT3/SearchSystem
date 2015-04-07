@@ -27,16 +27,21 @@ class SearchEngine
 
     public function add_word($word)
     {
+
         $obj = $this->pixie->orm->get(Models::Word)
             ->where('value', $word)
             ->find();
+
         if ($obj->loaded()) {
             return $obj->id;
         }
+
         $obj->value = $word;
         if (!$obj->save())
             return false;
+
         return $obj->id;
+
     }
 
     /**
@@ -58,6 +63,7 @@ class SearchEngine
     {
         $rows = [];
         foreach($this->get_indices($string, $tables) as $k => $row) {
+
             $table = $this->pixie->orm->get(Models::Table, $row->table_id);
             if ($table->loaded()) {
                 $row->table_name = $table->value;
@@ -68,6 +74,7 @@ class SearchEngine
                 }
             }
         }
+
         return $rows;
     }
 
@@ -78,6 +85,7 @@ class SearchEngine
      */
     public function get_words($string)
     {
+
         $string = strip_tags($string);
         $string = preg_replace('/[^а-я\w-\s]/iu', ' ', $string);
         $string = preg_replace('/\s-\s/', ' ', $string);
@@ -85,12 +93,16 @@ class SearchEngine
         $string = preg_replace('/\s+/', " ", $string);
         $string = mb_strtoupper($string);
         $array = explode(' ', $string);
+
         foreach($array as $key => $word) {
+
             if (empty($word)) {
                 unset($array[$key]);
                 continue;
             }
+
             $word = $this->morphy->ru->getBaseForm($word);
+
             if ($word) {
                 $array[$key] = current($word);
             }
@@ -129,21 +141,30 @@ class SearchEngine
 
     public function indices($model = \App\Models::Page, $columns = ['content'])
     {
+
         $m = $this->pixie->orm->get($model)
             ->find_all()
             ->as_array();
+
         $t = $this->pixie->orm->get(Models::Table)
             ->where('value', $model)
             ->find();
+
         if (!$t->loaded())
             return false;
+
         $t = $t->id;
+
         foreach($m as $p) {
+
             foreach($columns as $column) {
+
                 $content = $p->{$column};
                 $words = $this->get_words($content);
                 $words = $this->get_rating_reps($words);
+
                 foreach($words as $word => $reps) {
+
                     if ($id = $this->add_word($word)) {
                         $indice = $this->pixie->orm->get(Models::Indice)
                             ->where('word_id', $id)
@@ -204,7 +225,7 @@ class SearchEngine
                 FROM `indices`
                 WHERE `word_id` IN (" . implode(',', $words_id) . ") $tables
                 GROUP BY `table_index`, `table_id`
-                ORDER BY SUM(`weight`) * COUNT(`rating_reps`) DESC";
+                ORDER BY `weight`, SUM(`rating_reps`) DESC";
 
         $db = $this->pixie->db->get();
         return $db->execute($sql)->as_array();
