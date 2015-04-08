@@ -14,8 +14,8 @@ class Page extends \PHPixie\Controller
 
     public function before()
     {
-        $c = $this->request->server('HTTP_HOST');
         $this->view = $this->pixie->haml->get('main');
+        $c = $this->request->server('HTTP_HOST');
         $this->view->web = ($c == 'searchsystem') ? 'web/' : '';
     }
 

@@ -15,6 +15,9 @@ class SearchEngine
      */
     protected $morphy;
 
+    private $_tables_value = [];
+    private $_tables_full_value = [];
+
     /**
      * @param $pixie
      */
@@ -55,25 +58,78 @@ class SearchEngine
         return $words;
     }
 
+    public function get_table($id, $full = false)
+    {
+        if ($full) {
+            if (isset($this->_tables_full_value[$id])) {
+                return $this->_tables_full_value[$id];
+            }
+        }
+        if (isset($this->_tables_value[$id])) {
+            return $this->_tables_value[$id];
+        }
+
+        $table = $this->pixie->orm->get(Models::Table, $id);
+        if ($table->loaded()) {
+            $this->_tables_full_value[$id] = $table->full_value;
+            $this->_tables_value[$id] = $table->value;
+            if ($full) {
+                return $table->full_value;
+            }
+            return $table->value;
+        }
+
+        return false;
+    }
+
     /**
      * @param string $string
      * @return array
      */
     public function get_rows($string, $tables = [])
     {
-        $rows = [];
-        foreach($this->get_indices($string, $tables) as $k => $row) {
+        $_rows = [];
+        $indices = $this->get_indices($string, $tables);
+        foreach($indices as $key => $row) {
 
-            $table = $this->pixie->orm->get(Models::Table, $row->table_id);
-            if ($table->loaded()) {
-                $row->table_name = $table->value;
-                $table = $this->pixie->orm->get($row->table_name, $row->table_index);
-                if ($table->loaded()) {
-                    $rows[$k] = $table->as_array(true);
-                    $rows[$k]['__table'] = $row->table_name;
-                }
+            $table = $this->get_table($row->table_id);
+            if ($table) {
+
+                $_rows[$table][$key] = $row->table_index;
             }
+
         }
+
+        $rows = [];
+        foreach ($_rows as $table_name => $_row) {
+
+            $ids = array_values($_row);
+
+            foreach ($ids as &$id)
+                $id = "'$id'";
+
+            $ids = implode(',', $ids);
+            $fields = $this->pixie->db->expr("FIELD(id, " . $ids .  " )");
+            $ids = $this->pixie->db->expr('(' . $ids . ')');
+
+            $__rows = $this->pixie->orm->get($table_name)
+                ->where('id', 'IN', $ids)
+                ->order_by($fields)
+                ->find_all()
+                ->as_array(true);
+
+            $keys = array_keys($_row);
+
+            foreach ($__rows as $row) {
+                $key = current($keys);
+                next($keys);
+                $row->__table = $table_name;
+                $rows[$key] = $row;
+            }
+
+        }
+
+        ksort($rows);
 
         return $rows;
     }
@@ -86,7 +142,7 @@ class SearchEngine
     public function get_words($string)
     {
 
-        // FIXME: Дополнительный пробел перед тегом, для <p>hello</p>world
+        // FIXME: Дополнительный пробел "перед" тегом, для <p>hello</p>world
         $string = preg_replace('/([<].*?[>])/', ' $1 ', $string);
 
         $string = strip_tags($string);
@@ -174,9 +230,6 @@ class SearchEngine
                             ->where('table_id', $_table)
                             ->where('table_index', $_index->id)
                             ->find();
-
-                        if ($indice->loaded())
-                            continue;
 
                         $indice->word_id = $word_id;
                         $indice->table_id = $_table;

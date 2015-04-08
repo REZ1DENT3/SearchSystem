@@ -17,11 +17,11 @@ class Morphy extends \phpMorphy
      * @return array
      */
     function lemmatize($word, $type = self::NORMAL) {
-        if (isset($this->_rows['lemmatize'][$word][$type]))
-            return $this->_rows['lemmatize'][$word][$type];
+        if (isset($this->_rows[$word][$type]))
+            return $this->_rows[$word][$type];
 
-        $this->_rows['lemmatize'][$word][$type] = $this->getBaseForm($word, $type);
-        return $this->_rows['lemmatize'][$word][$type];
+        $this->_rows[$word][$type] = $this->getBaseForm($word, $type);
+        return $this->_rows[$word][$type];
     }
 
     /**
@@ -30,11 +30,11 @@ class Morphy extends \phpMorphy
      * @return array
      */
     function getBaseForm($word, $type = self::NORMAL) {
-        if (isset($this->_rows['getBaseForm'][$word][$type]))
-            return $this->_rows['getBaseForm'][$word][$type];
+        if (isset($this->_rows[$word][$type]))
+            return $this->_rows[$word][$type];
 
-        $this->_rows['getBaseForm'][$word][$type] = $this->invoke('getBaseForm', $word, $type);
-        return $this->_rows['getBaseForm'][$word][$type];
+        $this->_rows[$word][$type] = $this->invoke('getBaseForm', $word, $type);
+        return $this->_rows[$word][$type];
     }
 
 }

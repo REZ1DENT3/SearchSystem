@@ -38,7 +38,7 @@ class Search extends \App\Page
         $se = new \App\SearchEngine($this->pixie);
         $se->indices(Models::Page, ['content', 'title']);
         $t2 = xdebug_time_index();
-        die;
+        die($t2 - $t1);
     }
 
     public function action_indices_tests()
@@ -47,7 +47,7 @@ class Search extends \App\Page
         $se = new \App\SearchEngine($this->pixie);
         $se->indices(Models::Test, ['value']);
         $t2 = xdebug_time_index();
-        die;
+        die($t2 - $t1);
     }
 
     function get_http_response_code($url) {
@@ -84,7 +84,7 @@ class Search extends \App\Page
             $page->save();
         }
         $t2 = xdebug_time_index();
-        die;
+        die($t2 - $t1);
     }
 
 }

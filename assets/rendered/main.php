@@ -43,14 +43,14 @@
             <?php foreach($rows as $key => $row) { ?>
               <li class="list-group-item">
                 <span class="badge">
-                  <?php echo htmlspecialchars($row['__table'],ENT_QUOTES,'UTF-8'); ?>
+                  <?php echo htmlspecialchars($row->__table,ENT_QUOTES,'UTF-8'); ?>
                 </span>
-                <?php if ($row['__table'] == 'page') { ?>
-                  <a <?php echo MtHaml\Runtime::renderAttributes(array(array('href', ($row['url'])), array('target', '__blink')), 'html5', 'UTF-8'); ?>>
-                    <?php echo htmlspecialchars($row['title'],ENT_QUOTES,'UTF-8'); ?>
+                <?php if ($row->__table == 'page') { ?>
+                  <a <?php echo MtHaml\Runtime::renderAttributes(array(array('href', ($row->url)), array('target', '__blink')), 'html5', 'UTF-8'); ?>>
+                    <?php echo htmlspecialchars($row->title,ENT_QUOTES,'UTF-8'); ?>
                   </a>
-                <?php } elseif ($row['__table'] == 'test') { ?>
-                  <?php echo htmlspecialchars($row['value'],ENT_QUOTES,'UTF-8'); ?>
+                <?php } elseif ($row->__table == 'test') { ?>
+                  <?php echo htmlspecialchars($row->value,ENT_QUOTES,'UTF-8'); ?>
                 <?php } ?>
               </li>
             <?php } ?>

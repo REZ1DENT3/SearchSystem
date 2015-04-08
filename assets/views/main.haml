@@ -33,12 +33,12 @@
             -foreach($rows as $key => $row)
               %li.list-group-item
                 %span.badge
-                  =$row['__table']
-                - if ($row['__table'] == 'page')
-                  %a(href = "#{$row['url']}" target="__blink" )
-                    =$row['title']
-                - elseif ($row['__table'] == 'test')
-                  =$row['value']
+                  =$row->__table
+                - if ($row->__table == 'page')
+                  %a(href = "#{$row->url}" target="__blink" )
+                    =$row->title
+                - elseif ($row->__table == 'test')
+                  =$row->value
 
       .col-lg-4
         -if (count($rows))
