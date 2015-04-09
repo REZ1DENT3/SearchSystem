@@ -142,6 +142,8 @@ class SearchEngine
     public function get_words($string)
     {
 
+        $string = htmlspecialchars_decode($string);
+
         // FIXME: Дополнительный пробел "перед" тегом, для <p>hello</p>world
         $string = preg_replace('/([<].*?[>])/', ' $1 ', $string);
 

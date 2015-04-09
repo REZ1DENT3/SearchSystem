@@ -61,13 +61,17 @@ class Search extends \App\Page
         include_once $this->pixie->root_dir . 'classes/App/simple_html_dom.php';
         $range = [254277, 253973, 244069, 219475, 216107, 205710, 197970, 194470, 189360, 188666, 186816, 186194, 178899, 178833];
         $range = array_merge($range, range(1, 254949));
+        $url =
+            $this->pixie->db->get()->execute("SELECT `url` FROM `pages` ORDER BY `id` DESC LIMIT 1")->as_array();
+        if (count($url)) {
+            $url = $url[0]->url;
+            $key = array_search($url, $range);
+            if ($key >= 0) {
+                $range = array_splice($range, $key + 1);
+            }
+        }
         foreach($range as $r) {
             $url = "http://habrahabr.ru/post/$r/";
-            $page = $this->pixie->orm->get(Models::Page)
-                ->where('url', $url)
-                ->find();
-            if ($page->loaded())
-                continue;
             if($this->get_http_response_code($url) != "200"){
                 continue;
             }
@@ -77,10 +81,11 @@ class Search extends \App\Page
             $title = $title->plaintext;
             $content = $content->find('div.content', 0);
             if (!$content) continue;
+            $page = $this->pixie->orm->get(Models::Page);
             $page->content = $content->plaintext;
             $page->title = $title;
             $page->datetime = date('Y-m-d H:i:s', time());
-            $page->url = $url;
+            $page->url = $r;
             $page->save();
         }
         $t2 = xdebug_time_index();
