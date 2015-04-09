@@ -60,7 +60,7 @@ class Search extends \App\Page
         $t1 = xdebug_time_index();
         include_once $this->pixie->root_dir . 'classes/App/simple_html_dom.php';
         $range = [254277, 253973, 244069, 219475, 216107, 205710, 197970, 194470, 189360, 188666, 186816, 186194, 178899, 178833];
-        $range = array_merge($range, range(1, 254949));
+        $range = array_merge($range, range(1, 255365));
         $url =
             $this->pixie->db->get()->execute("SELECT `url` FROM `pages` ORDER BY `id` DESC LIMIT 1")->as_array();
         if (count($url)) {
