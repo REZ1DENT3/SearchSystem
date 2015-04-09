@@ -154,6 +154,8 @@ class SearchEngine
         $string = preg_replace('/[\s\t\n\r]+/', ' ', $string);
         $string = mb_strtoupper($string);
 
+        $string = trim($string);
+
         if (empty($string)) {
             return [];
         }

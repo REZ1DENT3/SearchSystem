@@ -4,7 +4,7 @@ return array(
     'default' => array(
 	
         'user' => 'root',
-        'password' => '',
+        'password' => 'root',
         'driver' => 'PDO',
         //'Connection' is required if you use the PDO driver
         'connection' => "mysql:host=localhost;dbname=habr-search",
