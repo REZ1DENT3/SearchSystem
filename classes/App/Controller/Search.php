@@ -76,9 +76,11 @@ class Search extends \App\Page
                 continue;
             }
             $content = file_get_html($url);
-            if (!is_object($content))
+            try {
+                $title = $content->find('h1.title span.post_title', 0);
+            } catch (\Exception $e) {
                 continue;
-            $title = $content->find('h1.title span.post_title', 0);
+            }
             if (!$title) continue;
             $title = $title->plaintext;
             $content = $content->find('div.content', 0);
