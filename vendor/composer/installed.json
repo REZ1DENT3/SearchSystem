@@ -6,18 +6,18 @@
         "source": {
             "type": "git",
             "url": "https://github.com/dracony/PHPixie-Core.git",
-            "reference": "32950624a6ce5ffc8e222bb26ffd1b38014702f6"
+            "reference": "52660b51002e53243bda3af6c11151a3232bfd7a"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/dracony/PHPixie-Core/zipball/32950624a6ce5ffc8e222bb26ffd1b38014702f6",
-            "reference": "32950624a6ce5ffc8e222bb26ffd1b38014702f6",
+            "url": "https://api.github.com/repos/dracony/PHPixie-Core/zipball/52660b51002e53243bda3af6c11151a3232bfd7a",
+            "reference": "52660b51002e53243bda3af6c11151a3232bfd7a",
             "shasum": ""
         },
         "require": {
             "php": ">=5.3.0"
         },
-        "time": "2014-10-20 15:39:06",
+        "time": "2015-04-16 11:59:58",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -263,6 +263,58 @@
         "keywords": [
             "HAML",
             "templating"
+        ]
+    },
+    {
+        "name": "phpixie/cache",
+        "version": "dev-master",
+        "version_normalized": "9999999-dev",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/dracony/PHPixie-Cache.git",
+            "reference": "4d717332068eb02fd82d48ad60144ba88cb068e3"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/dracony/PHPixie-Cache/zipball/4d717332068eb02fd82d48ad60144ba88cb068e3",
+            "reference": "4d717332068eb02fd82d48ad60144ba88cb068e3",
+            "shasum": ""
+        },
+        "require": {
+            "phpixie/db": "2.*@dev"
+        },
+        "time": "2015-04-05 10:37:28",
+        "type": "library",
+        "extra": {
+            "branch-alias": {
+                "dev-master": "2.x-dev"
+            }
+        },
+        "installation-source": "source",
+        "autoload": {
+            "psr-0": {
+                "PHPixie": "classes/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD"
+        ],
+        "authors": [
+            {
+                "name": "Roman Tsiupa",
+                "email": "draconyster@gmail.com",
+                "homepage": "http://dracony.org"
+            }
+        ],
+        "description": "Cache library for PHPixie",
+        "homepage": "http://phpixie.com",
+        "keywords": [
+            "apc",
+            "cache",
+            "database",
+            "memcache",
+            "xcache"
         ]
     }
 ]

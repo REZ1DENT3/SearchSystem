@@ -50,9 +50,28 @@ class Search extends \App\Page
         die($t2 - $t1);
     }
 
-    function get_http_response_code($url) {
+    public function get_http_response_code($url) {
         $headers = get_headers($url);
         return substr($headers[0], 9, 3);
+    }
+
+    public function action_tests()
+    {
+        include_once $this->pixie->root_dir . 'classes/App/simple_html_dom.php';
+        $url = "http://habrahabr.ru/post/34700/";
+        $content = file_get_html($url);
+        $title = $content->find('h1.title span.post_title', 0);
+        if (!$title) die('title');
+        $title = $title->plaintext;
+        $content = $content->find('div.content', 0);
+        if (!$content) die('content');
+        $page = $this->pixie->orm->get(Models::Page);
+        $page->content = $content->plaintext;
+        $page->title = $title;
+        $page->datetime = date('Y-m-d H:i:s', time());
+        $page->url = 31693;
+//        $page->save();
+        var_dump('Yes');
     }
 
     public function action_habra_parser()
@@ -70,9 +89,22 @@ class Search extends \App\Page
                 $range = array_splice($range, $key + 1);
             }
         }
-        foreach($range as $r) {
+        else {
+            exit('error');
+        }
+        $__url = $this->pixie->cache->get('__url');
+        $key = array_search($__url, $range);
+        if ($key >= 0) {
+            $range = array_splice($range, $key + 1);
+        }
+        foreach($range as $key => $r) {
             $url = "http://habrahabr.ru/post/$r/";
-            if($this->get_http_response_code($url) != "200"){
+            if($this->get_http_response_code($url) != "200")
+            {
+                $this->pixie->cache->set('__url', $r);
+                var_dump($r);
+                if ($key > 150)
+                    break;
                 continue;
             }
             $content = file_get_html($url);

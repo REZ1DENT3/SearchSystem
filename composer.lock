@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "e94d9ce419ea8bc8278f1771b228d5f7",
+    "hash": "39ccfea9ab1514c3a1b9231045c47416",
     "packages": [
         {
             "name": "mthaml/mthaml",
@@ -78,17 +78,67 @@
             "time": "2015-02-01 22:52:36"
         },
         {
+            "name": "phpixie/cache",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dracony/PHPixie-Cache.git",
+                "reference": "4d717332068eb02fd82d48ad60144ba88cb068e3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dracony/PHPixie-Cache/zipball/4d717332068eb02fd82d48ad60144ba88cb068e3",
+                "reference": "4d717332068eb02fd82d48ad60144ba88cb068e3",
+                "shasum": ""
+            },
+            "require": {
+                "phpixie/db": "2.*@dev"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "PHPixie": "classes/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD"
+            ],
+            "authors": [
+                {
+                    "name": "Roman Tsiupa",
+                    "email": "draconyster@gmail.com",
+                    "homepage": "http://dracony.org"
+                }
+            ],
+            "description": "Cache library for PHPixie",
+            "homepage": "http://phpixie.com",
+            "keywords": [
+                "apc",
+                "cache",
+                "database",
+                "memcache",
+                "xcache"
+            ],
+            "time": "2015-04-05 10:37:28"
+        },
+        {
             "name": "phpixie/core",
             "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dracony/PHPixie-Core.git",
-                "reference": "32950624a6ce5ffc8e222bb26ffd1b38014702f6"
+                "reference": "52660b51002e53243bda3af6c11151a3232bfd7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dracony/PHPixie-Core/zipball/32950624a6ce5ffc8e222bb26ffd1b38014702f6",
-                "reference": "32950624a6ce5ffc8e222bb26ffd1b38014702f6",
+                "url": "https://api.github.com/repos/dracony/PHPixie-Core/zipball/52660b51002e53243bda3af6c11151a3232bfd7a",
+                "reference": "52660b51002e53243bda3af6c11151a3232bfd7a",
                 "shasum": ""
             },
             "require": {
@@ -121,7 +171,7 @@
             "keywords": [
                 "framework"
             ],
-            "time": "2014-10-20 15:39:06"
+            "time": "2015-04-16 11:59:58"
         },
         {
             "name": "phpixie/db",
@@ -271,6 +321,7 @@
         "phpixie/db": 20,
         "phpixie/orm": 20,
         "phpixie/haml": 20,
+        "phpixie/cache": 20,
         "mthaml/mthaml": 20
     },
     "prefer-stable": false,

@@ -149,9 +149,11 @@ class SearchEngine
 
         $string = strip_tags($string);
         $string = preg_replace('/[^а-я\w-\s]/iu', ' ', $string);
+        $string = preg_replace('/_/iu', ' ', $string);
         $string = preg_replace('/[\s\t\n\r]-[\s\t\n\r]/', ' ', $string);
         $string = preg_replace('/ё/iu', 'Е', $string);
         $string = preg_replace('/[\s\t\n\r]+/', ' ', $string);
+        $string = preg_replace('/[-]{2,}/', '-', $string);
         $string = mb_strtoupper($string);
 
         if (empty($string)) {
@@ -160,11 +162,38 @@ class SearchEngine
 
         $array = explode(' ', $string);
 
-        foreach($array as $key => $word) {
+        $count = count($array);
+        for ($key = 0; $key < $count; $key++)
+        {//$array as $key => $word) {
 
-            $word = $this->morphy->get('ru')->getBaseForm($word);
-            if ($word) {
-                $array[$key] = current($word);
+            $word = $array[$key];
+
+            if (is_numeric($word))
+                continue;
+
+            if ($word == '-') {
+                unset($array[$key]);
+                continue;
+            }
+
+            $_word = $this->morphy->get('ru')->getBaseForm($word);
+            if ($_word) {
+                $array[$key] = current($_word);
+            }
+            else {
+                if (preg_match('/\d+/', $word)) {
+                    unset($array[$key]);
+                    continue;
+                }
+                $word = explode('-', $word);
+                $c = count($word);
+                if ($c > 2) {
+                    $array[$key] = current($word);
+                    unset($word[0]);
+                    $array = array_merge($array, $word);
+                    $count += $c - 2;
+                    $key--;
+                }
             }
         }
 

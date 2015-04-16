@@ -4,6 +4,7 @@
     "phpixie/db": "2.*@dev",
     "phpixie/orm": "2.*@dev",
     "phpixie/haml": "2.*@dev",
+    "phpixie/cache":"2.*@dev",
     "mthaml/mthaml": "dev-master"
   }
 }

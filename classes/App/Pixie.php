@@ -17,7 +17,8 @@ class Pixie extends \PHPixie\Pixie
     protected $modules = array(
         'db' => '\PHPixie\DB',
         'orm' => '\PHPixie\ORM',
-        'haml' => '\PHPixie\Haml'
+        'haml' => '\PHPixie\Haml',
+        'cache' => '\PHPixie\Cache'
     );
 
     public function __construct()
