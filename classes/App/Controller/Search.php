@@ -55,25 +55,6 @@ class Search extends \App\Page
         return substr($headers[0], 9, 3);
     }
 
-    public function action_tests()
-    {
-        include_once $this->pixie->root_dir . 'classes/App/simple_html_dom.php';
-        $url = "http://habrahabr.ru/post/34700/";
-        $content = file_get_html($url);
-        $title = $content->find('h1.title span.post_title', 0);
-        if (!$title) die('title');
-        $title = $title->plaintext;
-        $content = $content->find('div.content', 0);
-        if (!$content) die('content');
-        $page = $this->pixie->orm->get(Models::Page);
-        $page->content = $content->plaintext;
-        $page->title = $title;
-        $page->datetime = date('Y-m-d H:i:s', time());
-        $page->url = 31693;
-//        $page->save();
-        var_dump('Yes');
-    }
-
     public function action_habra_parser()
     {
         $t1 = xdebug_time_index();
@@ -107,8 +88,15 @@ class Search extends \App\Page
                     break;
                 continue;
             }
-            $content = file_get_html($url);
-            $title = $content->find('h1.title span.post_title', 0);
+            try {
+                $content = file_get_html($url);
+                if (!is_object($content))
+                    continue;
+                $title = $content->find('h1.title span.post_title', 0);
+            }
+            catch (\Exception $e) {
+                continue;
+            }
             if (!$title) continue;
             $title = $title->plaintext;
             $content = $content->find('div.content', 0);

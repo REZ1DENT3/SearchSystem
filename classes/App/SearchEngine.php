@@ -164,10 +164,9 @@ class SearchEngine
 
         $count = count($array);
         for ($key = 0; $key < $count; $key++)
-        {//$array as $key => $word) {
+        {
 
             $word = $array[$key];
-
             if (is_numeric($word))
                 continue;
 
@@ -186,12 +185,15 @@ class SearchEngine
                     continue;
                 }
                 $word = explode('-', $word);
-                $c = count($word);
-                if ($c > 2) {
+                if (count($word) > 2) {
                     $array[$key] = current($word);
                     unset($word[0]);
+                    foreach ($word as $__key => $__word) {
+                        if (empty($word))
+                            unset($word[$__key]);
+                    }
                     $array = array_merge($array, $word);
-                    $count += $c - 2;
+                    $count = count($array);
                     $key--;
                 }
             }
@@ -228,50 +230,165 @@ class SearchEngine
         return $words_id;
     }
 
-    public function indices($model = \App\Models::Page, $columns = ['content'])
+    /**
+     * Gets singular form of a noun
+     *
+     * @param string $str Noun to get singular form of
+     * @return string Singular form of the noun
+     */
+    protected function singular($str)
+    {
+        $regexes = array(
+            '/^(.*?us)$/i' => '\\1',
+            '/^(.*?[sxz])es$/i' => '\\1',
+            '/^(.*?[^aeioudgkprt]h)es$/i' => '\\1',
+            '/^(.*?[^aeiou])ies$/i' => '\\1y',
+            '/^(.*?)s$/' => '\\1',
+        );
+        foreach ($regexes as $key => $val)
+        {
+            $str = preg_replace($key, $val, $str, -1, $count);
+            if ($count)
+            {
+                return $str;
+            }
+        }
+        return $str;
+    }
+
+    /**
+     * Gets plural form of a noun
+     *
+     * @param string  $str Noun to get a plural form of
+     * @return string  Plural form
+     */
+    protected function plural($str)
+    {
+        $regexes = array(
+            '/^(.*?[sxz])$/i' => '\\1es',
+            '/^(.*?[^aeioudgkprt]h)$/i' => '\\1es',
+            '/^(.*?[^aeiou])y$/i' => '\\1ies',
+        );
+        foreach ($regexes as $key => $val)
+        {
+            $str = preg_replace($key, $val, $str, -1, $count);
+            if ($count)
+            {
+                return $str;
+            }
+        }
+        return $str.'s';
+    }
+
+    public function indices($table_name = \App\Models::Page, $columns = ['content'])
     {
 
-        $_model = $this->pixie->orm->get($model)
-            ->find_all()
-            ->as_array();
+        $limit = 100;
+        $offset = 0;
+        $pred = $offset;
 
-        $_table = $this->pixie->orm->get(Models::Table)
-            ->where('value', $model)
-            ->find();
+        while ($pred == $offset)
+        {
 
-        if (!$_table->loaded())
-            return false;
+            $_table = $this->pixie->orm->get(Models::Table)
+                ->where('value', $table_name)
+                ->find();
 
-        $_table = $_table->id;
+            if (!$_table->loaded())
+                return false;
 
-        foreach($_model as $_index) {
+            $_table = $_table->id;
 
-            foreach($columns as $column) {
+            /**
+            SELECT SQL_NO_CACHE *
+            FROM `pages`
+            WHERE `id` NOT IN (
+            SELECT DISTINCT `table_index`
+            FROM `indices`
+            WHERE `table_id`=2
+            )
+            LIMIT 0, 100
 
-                $content = $_index->{$column};
-                $words = $this->get_words($content);
-                $words = $this->get_rating_reps($words);
+             * Quick
+            SELECT SQL_NO_CACHE `pages`.*
+            FROM `pages`
+            LEFT JOIN (
+            SELECT DISTINCT `table_index` `id`
+            FROM `indices`
+            WHERE `table_id`=2
+            ) `ind` ON `ind`.`id`=`pages`.`id`
+            WHERE `ind`.`id` IS NULL
+            ORDER BY `pages`.`id` DESC
+            LIMIT 0, 100
+             */
 
-                foreach($words as $word => $reps) {
+            $indice_table = $this->plural(Models::Indice);
+            $plural_table = $this->plural($table_name);
 
-                    if ($word_id = $this->add_word($word)) {
+            $sql = "SELECT `$plural_table`.*
+                    FROM `pages`
+                      LEFT JOIN (
+                        SELECT DISTINCT `table_index` `id`
+                        FROM `$indice_table`
+                        WHERE `table_id`=$_table
+                      ) `ind` ON `ind`.`id`=`pages`.`id`
+                    WHERE `ind`.`id` IS NULL
+                    ORDER BY `$plural_table`.`id` ASC
+                    LIMIT $offset, $limit";
 
-                        $indice = $this->pixie->orm->get(Models::Indice)
-                            ->where('word_id', $word_id)
-                            ->where('table_id', $_table)
-                            ->where('table_index', $_index->id)
-                            ->find();
+            $offset += $limit;
 
-                        $indice->word_id = $word_id;
-                        $indice->table_id = $_table;
-                        $indice->table_index = $_index->id;
-                        $indice->rating_reps = $reps;
-                        $indice->weight = $this->weight($word);
-                        $indice->save();
+            $db = $this->pixie->db->get();
+            $_model = $db->execute($sql)->as_array();
 
+//            $_model = $this->pixie->orm->get($table_name)
+//                ->offset($offset * $i)
+//                ->limit(100)
+//                ->find_all()
+//                ->as_array();
+
+            $pred = count($_model);
+
+
+            foreach ($_model as $_index) {
+
+                foreach ($columns as $column) {
+
+                    $content = $_index->{$column};
+                    $words = $this->get_words($content);
+                    $words = $this->get_rating_reps($words);
+
+                    $loaded = $this->pixie->orm->get(Models::Indice)
+                        ->where('table_id', $_table)
+                        ->where('table_index', $_index->id)
+                        ->find()
+                        ->loaded();
+
+                    if ($loaded)
+                        continue;
+
+                    foreach ($words as $word => $reps) {
+
+                        if ($word_id = $this->add_word($word)) {
+
+                            $indice = $this->pixie->orm->get(Models::Indice)
+                                ->where('word_id', $word_id)
+                                ->where('table_id', $_table)
+                                ->where('table_index', $_index->id)
+                                ->find();
+
+                            $indice->word_id = $word_id;
+                            $indice->table_id = $_table;
+                            $indice->table_index = $_index->id;
+                            $indice->rating_reps = $reps;
+                            $indice->weight = $this->weight($word);
+                            $indice->save();
+
+                        }
                     }
                 }
             }
+
         }
 
         return true;
