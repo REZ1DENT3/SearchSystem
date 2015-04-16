@@ -17,6 +17,7 @@ return array(
 	
         'user' => $db_login,
         'password' => $db_password,
+
         'driver' => 'PDO',
         //'Connection' is required if you use the PDO driver
         'connection' => "mysql:host=localhost;dbname=$db_name",
