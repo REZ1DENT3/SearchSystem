@@ -326,12 +326,12 @@ class SearchEngine
             $plural_table = $this->plural($table_name);
 
             $sql = "SELECT `$plural_table`.*
-                    FROM `pages`
+                    FROM `$plural_table`
                       LEFT JOIN (
                         SELECT DISTINCT `table_index` `id`
                         FROM `$indice_table`
                         WHERE `table_id`=$_table
-                      ) `ind` ON `ind`.`id`=`pages`.`id`
+                      ) `ind` ON `ind`.`id`=`$plural_table`.`id`
                     WHERE `ind`.`id` IS NULL
                     ORDER BY `$plural_table`.`id` ASC
                     LIMIT $offset, $limit";
