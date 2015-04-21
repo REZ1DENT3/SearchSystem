@@ -89,6 +89,10 @@ class Search extends \App\Page
                 continue;
             }
             try {
+                $__url_back = $this->pixie->cache->get('__url_back');
+                if ($r == $__url_back)
+                    continue;
+                $this->pixie->cache->set('__url_back', $r);
                 $content = file_get_html($url);
                 if (!is_object($content))
                     continue;

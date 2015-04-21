@@ -156,6 +156,8 @@ class SearchEngine
         $string = preg_replace('/[-]{2,}/', '-', $string);
         $string = mb_strtoupper($string);
 
+        $string = trim($string);
+
         if (empty($string)) {
             return [];
         }
@@ -283,7 +285,7 @@ class SearchEngine
     public function indices($table_name = \App\Models::Page, $columns = ['content'])
     {
 
-        $limit = 100;
+        $limit = 40;
         $offset = 0;
         $pred = $offset;
 
